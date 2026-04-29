@@ -15,5 +15,5 @@ public:
     void runTick(); 
     int getCurrentTime() const;
 };
-//3bdo_7anaka
+//3bdo
 #endif
