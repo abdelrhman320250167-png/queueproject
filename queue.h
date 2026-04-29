@@ -13,5 +13,3 @@ public:
     bool isEmpty() const;
     void updateWaitingTimes();
 };
-
-#endif
