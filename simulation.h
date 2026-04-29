@@ -15,5 +15,5 @@ public:
     void runTick(); 
     int getCurrentTime() const;
 };
-// FAHD
+//3bdo
 #endif
