@@ -9,6 +9,7 @@ private:
     int waitingTime;
     bool isVIP;
 // queue project
+//
 public:
     Customer(int id = 0, int arrTime = 0, int transTime = 0, bool vip = false);
     int getArrivalTime() const;
