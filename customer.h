@@ -23,8 +23,9 @@ public:
     Status getStatus() const;
 
     void setWaitingTime(int time);
-    void incrementWaitingTime();
+    void calculateWaitingTime(int currentTime);
     void setStatus(Status s);
+    void printInfo() const;
 };
 
 #endif
