@@ -4,9 +4,11 @@
 #include "Customer.h"
 #include <deque>
 
+using namespace std;
+
 class Queue {
 private:
-    std::deque<Customer*> customers;
+    deque<Customer*> customers;
 
 public:
     void enqueue(Customer* c);
