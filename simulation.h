@@ -1,5 +1,6 @@
 #ifndef SIMULATION_H
 #define SIMULATION_H
+
 #include "Queue.h"
 #include "Server.h"
 #include <vector>
@@ -12,7 +13,8 @@ private:
 
 public:
     Simulation(int numServers);
-    void runTick(); 
+
+    void runTick();
     int getCurrentTime() const;
 };
 
