@@ -1,46 +1,63 @@
 #include "Server.h"
-
-using namespace std;
+#include <iostream>
 
 Server::Server() {
     currentCustomer = nullptr;
     busy = false;
     remainingTime = 0;
+    servedCount = 0;
 }
 
 bool Server::isFree() const {
     return !busy;
 }
 
-void Server::assignCustomer(Customer* c) {
-    if (c == nullptr) return;
+bool Server::isBusy() const {
+    return busy;
+}
 
+void Server::assignCustomer(Customer* c) {
     currentCustomer = c;
     busy = true;
     remainingTime = c->getTransactionTime();
-    c->setStatus(SERVING);
+    currentCustomer->setStatus(SERVING);
 }
 
 void Server::updateTime() {
-    if (!busy || currentCustomer == nullptr) return;
-
-    remainingTime--;
-
-    if (remainingTime <= 0) {
-        finishService();
+    if (busy && remainingTime > 0) {
+        remainingTime--;
+        if (remainingTime == 0) {
+            finishService();
+        }
     }
 }
 
 void Server::finishService() {
     if (currentCustomer != nullptr) {
         currentCustomer->setStatus(DONE);
+        currentCustomer = nullptr;
     }
-
-    currentCustomer = nullptr;
     busy = false;
-    remainingTime = 0;
+    servedCount++;
 }
 
 Customer* Server::getCurrentCustomer() const {
     return currentCustomer;
+}
+
+int Server::getRemainingTime() const {
+    return remainingTime;
+}
+
+int Server::getTotalServedCount() const {
+    return servedCount;
+}
+
+void Server::printStatus() const {
+    if (busy) {
+        std::cout << "Server is BUSY with Customer " << currentCustomer->getId() 
+                  << " | Remaining Time: " << remainingTime << std::endl;
+    } else {
+        std::cout << "Server is FREE" << std::endl;
+    }
 }
