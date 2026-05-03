@@ -15,7 +15,6 @@ public:
     Customer* dequeueCustomer();
     bool isEmpty() const;
     void updateWaitingTimes(int currentTime);
-
     int getQueueSize() const;
     Customer* getCustomerAt(int index) const;
 };
