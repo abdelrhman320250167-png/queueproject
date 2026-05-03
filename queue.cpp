@@ -5,7 +5,11 @@ using namespace std;
 
 void Queue::enqueueCustomer(Customer* c) {
     if (c->getIsVIP()) {
-        customers.push_front(c);
+        auto it = customers.begin();
+        while (it != customers.end() && (*it)->getIsVIP()) {
+            ++it;
+        }
+        customers.insert(it, c); 
     } else {
         customers.push_back(c);
     }
@@ -25,17 +29,17 @@ bool Queue::isEmpty() const {
 }
 
 void Queue::updateWaitingTimes(int currentTime) {
-    for (int i = 0; i < (int)customers.size(); i++) {
-        customers[i]->updateWaitingDuration(currentTime);
+    for (size_t i = 0; i < customers.size(); i++) {
+        customers[i]->calculateWaitingTime(currentTime); 
     }
 }
 
 int Queue::getQueueSize() const {
-    return (int)customers.size();
+    return customers.size();
 }
 
-Customer* Queue::getCustomerAt(int index) const {
-    if (index >= 0 && index < (int)customers.size()) {
+Customer* Queue::getCustomerAt(size_t index) const {
+    if (index < customers.size()) {
         return customers[index];
     }
     return nullptr;
