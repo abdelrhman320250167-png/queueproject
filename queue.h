@@ -6,7 +6,7 @@
 
 using namespace std;
 
-class Queue {يننينبنلن
+class Queue {
 private:
     deque<Customer*> customers;
 
