@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
+
 using namespace std;
 
 Simulation::Simulation(int numServers, int maxSimulationTime) {
@@ -11,7 +12,7 @@ Simulation::Simulation(int numServers, int maxSimulationTime) {
     this->arrivedCount = 0;
     this->servedCount = 0;
     for (int i = 0; i < numServers; i++) {
-        servers.push_back(Server(i + 1)); 
+        servers.push_back(Server());
     }
     
     srand(time(0)); 
@@ -32,7 +33,6 @@ void Simulation::runTick() {
 }
 
 void Simulation::processArrival() {
-    // 30% chance of arrival each tick
     if ((rand() % 100) < 30) {
         arrivedCount++;
         int serviceTime = (rand() % 8) + 3; 
@@ -44,24 +44,21 @@ void Simulation::processArrival() {
 }
 
 void Simulation::updateServers() {
+    servedCount = 0; 
+    
     for (size_t i = 0; i < servers.size(); i++) {
         if (!servers[i].isFree()) {
-            servers[i].advanceTime(); 
-            
-            if (servers[i].getRemainingTime() <= 0) {
-                servers[i].finishService();
-                servedCount++;
-            }
+            servers[i].updateTime(); 
         }
+        servedCount += servers[i].getTotalServedCount(); 
     }
 }
 
 void Simulation::assignCustomersToServers() {
     for (size_t i = 0; i < servers.size(); i++) {
         if (servers[i].isFree() && !q.isEmpty()) {
-            // dequeueCustomer returns a pointer (Customer*)
             Customer* next = q.dequeueCustomer();
-            servers[i].serveCustomer(next); 
+            servers[i].assignCustomer(next); 
         }
     }
 }
