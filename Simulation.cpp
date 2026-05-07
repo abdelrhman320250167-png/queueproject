@@ -37,7 +37,7 @@ void Simulation::processArrival() {
         arrivedCount++;
         int serviceTime = (rand() % 8) + 3; 
         bool isVIP = (rand() % 100) < 15;    
-  
+
         Customer* newCust = new Customer(arrivedCount, currentTime, serviceTime, isVIP);
         q.enqueueCustomer(newCust);
     }
