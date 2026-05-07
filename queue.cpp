@@ -1,46 +1,72 @@
 #include "Queue.h"
-#include <iostream>
 
-using namespace std;
+Queue::Queue() {
+    front = nullptr;
+    rear = nullptr;
+    size = 0;
+}
+
+Queue::~Queue() {
+    while (!isEmpty()) {
+        dequeueCustomer();
+    }
+}
 
 void Queue::enqueueCustomer(Customer* c) {
-    if (c->getIsVIP()) {
-        auto it = customers.begin();
-        while (it != customers.end() && (*it)->getIsVIP()) {
-            ++it;
-        }
-        customers.insert(it, c); 
-    } else {
-        customers.push_back(c);
+    Node* newNode = new Node(c);
+    
+    if (isEmpty()) {
+        front = rear = newNode;
+    } 
+    else if (c->getIsVIP()) {
+        newNode->next = front;
+        front = newNode;
+    } 
+    else {
+        rear->next = newNode;
+        rear = newNode;
     }
+    size++;
 }
 
 Customer* Queue::dequeueCustomer() {
-    if (!isEmpty()) {
-        Customer* frontC = customers.front();
-        customers.pop_front();
-        return frontC;
+    if (isEmpty()) return nullptr;
+
+    Node* temp = front;
+    Customer* cust = temp->data;
+    front = front->next;
+
+    if (front == nullptr) {
+        rear = nullptr;
     }
-    return nullptr; 
+
+    delete temp;
+    size--;
+    return cust;
 }
 
 bool Queue::isEmpty() const {
-    return customers.empty();
+    return front == nullptr;
 }
 
 void Queue::updateWaitingTimes(int currentTime) {
-    for (size_t i = 0; i < customers.size(); i++) {
-        customers[i]->calculateWaitingTime(currentTime); 
+    Node* temp = front;
+    while (temp != nullptr) {
+        temp->data->calculateWaitingTime(currentTime);
+        temp = temp->next;
     }
 }
 
 int Queue::getQueueSize() const {
-    return customers.size();
+    return size;
 }
 
-Customer* Queue::getCustomerAt(size_t index) const {
-    if (index < customers.size()) {
-        return customers[index];
+Customer* Queue::getCustomerAt(int index) const {
+    if (index < 0 || index >= size) return nullptr;
+    
+    Node* temp = front;
+    for (int i = 0; i < index; i++) {
+        temp = temp->next;
     }
-    return nullptr;
+    return temp->data;
 }
