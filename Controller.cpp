@@ -1,14 +1,34 @@
 #include "Controller.h"
-#include <iostream>
+#include <SFML/System.hpp>
 
-Controller::Controller() : sim(5) { 
+// إعطاء قيم ابتدائية للمحاكاة (مثلا 5 سيرفرات و 500 وقت)
+Controller::Controller() : sim(5, 500) {
+}
+
+void Controller::initializeSystem() {
+    // الواجهة والمحاكاة بيتعملهم Initialize تلقائياً دلوقتي
 }
 
 void Controller::startSimulation() {
-    int ticks = 0;
-    while (ticks < 10) { 
-        sim.runTick(); 
-        std::cout << "Time is now: " << sim.getCurrentTime() << std::endl;
-        ticks++;
+    sf::Clock clock;
+    float tickRate = 0.5f; // سرعة المحاكاة: كل نص ثانية 
+
+    while (gui.isOpen()) {
+        
+        gui.handleEvents(); 
+
+        if (sim.getIsRunning()) {
+            // تحديث المحاكاة كل نص ثانية
+            if (clock.getElapsedTime().asSeconds() >= tickRate) {
+                updateSystem();
+                clock.restart(); 
+            }
+        }
+
+        gui.render(sim); 
     }
+}
+
+void Controller::updateSystem() {
+    sim.runTick(); 
 }
