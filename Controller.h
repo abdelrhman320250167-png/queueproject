@@ -2,15 +2,18 @@
 #define CONTROLLER_H
 
 #include "simulation.h" 
-#include "gui.h"        
+#include "gui.h"
 
 class Controller {
 private:
-    Simulation sim;  
+    Simulation sim;
+    GUI gui; 
 
 public:
-    Controller(); 
-    void startSimulation();  
+    Controller();
+    void initializeSystem();
+    void startSimulation();
+    void updateSystem();
 };
 
 #endif
