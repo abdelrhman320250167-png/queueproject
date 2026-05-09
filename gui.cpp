@@ -2,41 +2,27 @@
 #include <iostream>
 #include <algorithm>
 #include <cmath>
-#include <ctime>
 
 GUI::GUI(Simulation& s)
     : sim(s), 
-      window(sf::VideoMode({1200, 900}), "HYPER-FLOW NEON PRO V16.0"), 
-      tickRate(1.0f) // ثانية كاملة عشان العداد يمشي طبيعي
+      window(sf::VideoMode({1200, 900}), "HYPER-FLOW NEON PRO V19.0")
 {
-    srand((unsigned int)time(0));
     if (!font.openFromFile("C:/Windows/Fonts/arial.ttf") && !font.openFromFile("arial.ttf")) {
         std::cerr << "Font Error!" << std::endl;
     }
     visualHistory.assign(100, 0);
-    
-    // ألوان النيون اللي بتنور في الضلمة
     bgColor = sf::Color({10, 12, 16});
-    normalCustomerColor = sf::Color({0, 255, 255}); // Cyan
-    vipCustomerColor = sf::Color({255, 0, 255});   // Magenta
-    freeServerColor = sf::Color({50, 255, 50});    // Green
-    busyServerColor = sf::Color({255, 20, 100});   // Red
+    normalCustomerColor = sf::Color({0, 255, 255});
+    vipCustomerColor = sf::Color({255, 0, 255});
+    freeServerColor = sf::Color({50, 255, 50});
+    busyServerColor = sf::Color({255, 20, 100});
 }
 
 void GUI::render(Simulation& s) {
-    // --- تحديث السميوليشن (القلب النابض) ---
-    if (clock.getElapsedTime().asSeconds() >= tickRate) {
-        // احتمالية دخول الناس (رجعتها 45% عشان الأكشن)
-        if (rand() % 100 < 45) { 
-            int randomID = rand() % 900 + 100;
-            Customer* c = new Customer(randomID, sim.getCurrentTime(), rand()%7+4, (rand()%10==0));
-            Queue& q = const_cast<Queue&>(sim.getQueue());
-            q.enqueueCustomer(c);
-        }
-        const_cast<Simulation&>(sim).runTick(); 
+    if (clock.getElapsedTime().asSeconds() >= 0.5f) {
         visualHistory.push_back(sim.getQueue().getQueueSize());
         if (visualHistory.size() > 100) visualHistory.erase(visualHistory.begin());
-        clock.restart(); 
+        clock.restart();
     }
 
     window.clear(bgColor);
@@ -47,11 +33,10 @@ void GUI::render(Simulation& s) {
     drawServers(); 
     drawGraph();
 
-    // تأثير الليزر النيون
     float scanPos = std::fmod(t * 400.f, 1200.f);
     sf::RectangleShape scan({3.f, 900.f});
     scan.setPosition({scanPos, 0.f});
-    scan.setFillColor({0, 255, 255, 20});
+    scan.setFillColor({0, 255, 255, 15});
     window.draw(scan);
     
     window.display(); 
@@ -67,7 +52,6 @@ void GUI::drawDashboard() {
     title.setFillColor(sf::Color::White);
     window.draw(title);
 
-    // العداد - رجع كبير وواضح في النص
     sf::Text timer(font, "SYSTEM UPTIME: " + std::to_string(sim.getCurrentTime()) + "s", 32);
     timer.setPosition({480.f, 28.f});
     timer.setFillColor({0, 255, 255});
@@ -96,18 +80,28 @@ void GUI::drawServers() {
         window.draw(card);
 
         if (!isFree && servers[i].getCurrentCustomer()) {
-            sf::Text idTxt(font, "USER #" + std::to_string(servers[i].getCurrentCustomer()->getId()), 26);
-            idTxt.setPosition({x + 25.f, y + 60.f});
-            idTxt.setFillColor(sf::Color::White);
+            Customer* currentCust = servers[i].getCurrentCustomer();
+            sf::Color custCol = currentCust->getIsVIP() ? vipCustomerColor : normalCustomerColor;
+            
+            sf::CircleShape custCircle(34.f);
+            custCircle.setPosition({x + 85.f, y + 35.f});
+            custCircle.setOutlineThickness(4.f); 
+            custCircle.setOutlineColor(custCol);
+            custCircle.setFillColor({10, 10, 15});
+            window.draw(custCircle);
+
+            sf::Text idTxt(font, std::to_string(currentCust->getId()), 20);
+            idTxt.setPosition({x + 103.f, y + 57.f});
+            idTxt.setFillColor(custCol);
             window.draw(idTxt);
             
             sf::Text tLeft(font, "PROCESS: " + std::to_string(servers[i].getRemainingTime()) + "s", 16);
-            tLeft.setPosition({x + 25.f, y + 135.f});
+            tLeft.setPosition({x + 65.f, y + 145.f});
             tLeft.setFillColor(sCol);
             window.draw(tLeft);
         } else {
-            sf::Text rTxt(font, "READY", 22);
-            rTxt.setPosition({x + 75.f, y + 85.f});
+            sf::Text rTxt(font, "READY", 24);
+            rTxt.setPosition({x + 80.f, y + 85.f});
             rTxt.setFillColor(sCol);
             window.draw(rTxt);
         }
@@ -142,7 +136,6 @@ void GUI::drawQueue() {
 }
 
 void GUI::drawGraph() {
-    // الجراف - رجعناه كبير جداً ومرفوع
     float gX = 40.f, gY = 580.f, gW = 860.f, gH = 290.f;
     
     sf::RectangleShape bg({gW, gH});
@@ -155,7 +148,6 @@ void GUI::drawGraph() {
     if (visualHistory.empty()) return;
 
     int maxVal = *std::max_element(visualHistory.begin(), visualHistory.end());
-    // سكيل حساس (5) عشان الجراف يرفع فوراً
     float scale = (maxVal < 5) ? 5.0f : (float)maxVal;
 
     sf::VertexArray glowArea(sf::PrimitiveType::TriangleStrip, visualHistory.size() * 2);
@@ -180,7 +172,6 @@ void GUI::drawGraph() {
     window.draw(mainLine);
 }
 
-void GUI::run() { window.setFramerateLimit(60); }
 bool GUI::isOpen() const { return window.isOpen(); }
 void GUI::handleEvents() {
     while (const std::optional<sf::Event> event = window.pollEvent()) {

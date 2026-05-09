@@ -34,7 +34,6 @@ void Customer::setStatus(Status s) {
 }
 
 void Customer::printInfo() const {
-    cout << "ID: " << id << " | Arrival: " << arrivalTime 
-         << " | Service: " << transactionTime << " | Wait: " << waitingTime 
-         << " | VIP: " << (isVIP ? "Yes" : "No") << " | Status: " << status << endl;
+    cout << "ID: " << id << " | Arrival: " << arrivalTime  << " | Service: " << transactionTime << " | Wait: " << waitingTime 
+<< " | VIP: " << (isVIP ? "Yes" : "No") << " | Status: " << status << endl;
 }
