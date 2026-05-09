@@ -1,200 +1,189 @@
 #include "gui.h"
 #include <iostream>
-#include <string>
 #include <algorithm>
 #include <cmath>
+#include <ctime>
 
-SimulationGUI::SimulationGUI(Simulation& s) 
+GUI::GUI(Simulation& s)
     : sim(s), 
-      window(sf::VideoMode({1200, 900}), "QUANTUM QUEUE SYSTEMS - V4.0"), 
-      tickRate(1.0f) 
+      window(sf::VideoMode({1200, 900}), "HYPER-FLOW NEON PRO V16.0"), 
+      tickRate(1.0f) // ثانية كاملة عشان العداد يمشي طبيعي
 {
+    srand((unsigned int)time(0));
     if (!font.openFromFile("C:/Windows/Fonts/arial.ttf") && !font.openFromFile("arial.ttf")) {
         std::cerr << "Font Error!" << std::endl;
     }
-
-    // الألوان النيون الفخمة
-    bgColor = sf::Color(10, 12, 16);             // أسود عميق جداً
-    normalCustomerColor = sf::Color(0, 255, 255); // Cyan Neon
-    vipCustomerColor = sf::Color(255, 0, 255);    // Pink/Magenta Neon
-    freeServerColor = sf::Color(0, 255, 128);     // Green Neon
-    busyServerColor = sf::Color(255, 45, 85);     // Red Neon
+    visualHistory.assign(100, 0);
+    
+    // ألوان النيون اللي بتنور في الضلمة
+    bgColor = sf::Color({10, 12, 16});
+    normalCustomerColor = sf::Color({0, 255, 255}); // Cyan
+    vipCustomerColor = sf::Color({255, 0, 255});   // Magenta
+    freeServerColor = sf::Color({50, 255, 50});    // Green
+    busyServerColor = sf::Color({255, 20, 100});   // Red
 }
 
-void SimulationGUI::run() {
-    window.setFramerateLimit(60); // عشان الحركة تبقى ناعمة
-    while (window.isOpen()) {
-        handleEvents();
-        update();
-        render();
-    }
-}
-
-void SimulationGUI::handleEvents() {
-    while (const std::optional<sf::Event> event = window.pollEvent()) {
-        if (event->is<sf::Event::Closed>()) window.close();
-    }
-}
-
-void SimulationGUI::update() {
+void GUI::render(Simulation& s) {
+    // --- تحديث السميوليشن (القلب النابض) ---
     if (clock.getElapsedTime().asSeconds() >= tickRate) {
-        if (sim.getIsRunning()) sim.runTick(); 
+        // احتمالية دخول الناس (رجعتها 45% عشان الأكشن)
+        if (rand() % 100 < 45) { 
+            int randomID = rand() % 900 + 100;
+            Customer* c = new Customer(randomID, sim.getCurrentTime(), rand()%7+4, (rand()%10==0));
+            Queue& q = const_cast<Queue&>(sim.getQueue());
+            q.enqueueCustomer(c);
+        }
+        const_cast<Simulation&>(sim).runTick(); 
+        visualHistory.push_back(sim.getQueue().getQueueSize());
+        if (visualHistory.size() > 100) visualHistory.erase(visualHistory.begin());
         clock.restart(); 
     }
-}
 
-void SimulationGUI::render() {
-    window.clear(bgColor); 
+    window.clear(bgColor);
+    float t = animClock.getElapsedTime().asSeconds();
     
-    // رسم شبكة خفيفة في الخلفية (Grid) عشان تدي منظر تكنولوجي
-    for(int i=0; i<1200; i+=50) {
-        sf::RectangleShape line({1.f, 900.f});
-        line.setPosition({(float)i, 0.f});
-        line.setFillColor(sf::Color(255,255,255, 10)); // خطوط شفافة جداً
-        window.draw(line);
-    }
-
     drawDashboard();
     drawQueue();
-    drawServers();
+    drawServers(); 
     drawGraph();
+
+    // تأثير الليزر النيون
+    float scanPos = std::fmod(t * 400.f, 1200.f);
+    sf::RectangleShape scan({3.f, 900.f});
+    scan.setPosition({scanPos, 0.f});
+    scan.setFillColor({0, 255, 255, 20});
+    window.draw(scan);
     
     window.display(); 
 }
 
-void SimulationGUI::drawDashboard() {
-    // Header Bar بخط نيون تحتيه
-    sf::RectangleShape bar({1200.f, 80.f});
-    bar.setFillColor(sf::Color(20, 24, 30));
+void GUI::drawDashboard() {
+    sf::RectangleShape bar({1200.f, 100.f});
+    bar.setFillColor({20, 24, 30});
     window.draw(bar);
+    
+    sf::Text title(font, "NEON FLOW MONITOR", 24);
+    title.setPosition({40.f, 32.f});
+    title.setFillColor(sf::Color::White);
+    window.draw(title);
 
-    sf::RectangleShape neonLine({1200.f, 2.f});
-    neonLine.setPosition({0.f, 80.f});
-    neonLine.setFillColor(sf::Color(0, 255, 255, 150));
-    window.draw(neonLine);
+    // العداد - رجع كبير وواضح في النص
+    sf::Text timer(font, "SYSTEM UPTIME: " + std::to_string(sim.getCurrentTime()) + "s", 32);
+    timer.setPosition({480.f, 28.f});
+    timer.setFillColor({0, 255, 255});
+    window.draw(timer);
 
-    sf::Text t(font);
-    t.setFillColor(sf::Color::White);
-    t.setStyle(sf::Text::Bold);
-    t.setString("QUANTUM CONTROL INTERFACE");
-    t.setCharacterSize(22);
-    t.setPosition({30.f, 25.f});
-    window.draw(t);
-
-    int time = std::max(0, sim.getCurrentTime());
-    std::string stats = "SYSTEM_UPTIME: " + std::to_string(time) + "s  |  LOAD: STABLE";
-    t.setString(stats);
-    t.setCharacterSize(16);
-    t.setStyle(sf::Text::Regular);
-    t.setFillColor(sf::Color(0, 255, 255));
-    t.setPosition({850.f, 30.f});
-    window.draw(t);
+    sf::Text qStats(font, "QUEUE: " + std::to_string(sim.getQueue().getQueueSize()), 18);
+    qStats.setPosition({980.f, 38.f});
+    qStats.setFillColor(vipCustomerColor);
+    window.draw(qStats);
 }
 
-void SimulationGUI::drawServers() {
+void GUI::drawServers() {
     const auto& servers = sim.getServers();
-    for (int i = 0; i < (int)servers.size(); ++i) {
-        float x = 930.f, y = 120.f + (i * 200.f);
+    int displayLimit = std::min((int)servers.size(), 3); 
+
+    for (int i = 0; i < displayLimit; ++i) {
+        float x = 930.f, y = 140.f + (i * 245.f); 
         bool isFree = servers[i].isFree();
-        sf::Color statusColor = isFree ? freeServerColor : busyServerColor;
-
-        // رسم "هالة" Glow ورا السيرفر
-        sf::RectangleShape glow({230.f, 160.f});
-        glow.setPosition({x-5.f, y-5.f});
-        glow.setFillColor(sf::Color(statusColor.r, statusColor.g, statusColor.b, 30));
-        window.draw(glow);
-
-        // المربع الأساسي (LCD Look)
-        sf::RectangleShape card({220.f, 150.f});
+        sf::Color sCol = isFree ? freeServerColor : busyServerColor;
+        
+        sf::RectangleShape card({240.f, 210.f}); 
         card.setPosition({x, y});
-        card.setFillColor(sf::Color(15, 15, 20));
-        card.setOutlineThickness(2.f);
-        card.setOutlineColor(statusColor);
+        card.setFillColor({15, 15, 20});
+        card.setOutlineThickness(3.f);
+        card.setOutlineColor(sCol);
         window.draw(card);
 
-        // Header صغير جوه الكارت
-        sf::RectangleShape head({220.f, 30.f});
-        head.setPosition({x, y});
-        head.setFillColor(sf::Color(statusColor.r, statusColor.g, statusColor.b, 80));
-        window.draw(head);
-
-        sf::Text t(font);
-        t.setFillColor(sf::Color::White);
-        t.setString("STATION_UNIT_0" + std::to_string(i + 1));
-        t.setCharacterSize(14);
-        t.setPosition({x + 15.f, y + 5.f});
-        window.draw(t);
-
-        t.setString(isFree ? "STATUS: STANDBY" : "STATUS: ACTIVE");
-        t.setFillColor(statusColor);
-        t.setPosition({x + 15.f, y + 45.f});
-        window.draw(t);
-
         if (!isFree && servers[i].getCurrentCustomer()) {
-            t.setString("USER_ID: #" + std::to_string(servers[i].getCurrentCustomer()->getId()));
-            t.setCharacterSize(26);
-            t.setFillColor(sf::Color::White);
-            t.setPosition({x + 15.f, y + 80.f});
-            window.draw(t);
+            sf::Text idTxt(font, "USER #" + std::to_string(servers[i].getCurrentCustomer()->getId()), 26);
+            idTxt.setPosition({x + 25.f, y + 60.f});
+            idTxt.setFillColor(sf::Color::White);
+            window.draw(idTxt);
+            
+            sf::Text tLeft(font, "PROCESS: " + std::to_string(servers[i].getRemainingTime()) + "s", 16);
+            tLeft.setPosition({x + 25.f, y + 135.f});
+            tLeft.setFillColor(sCol);
+            window.draw(tLeft);
+        } else {
+            sf::Text rTxt(font, "READY", 22);
+            rTxt.setPosition({x + 75.f, y + 85.f});
+            rTxt.setFillColor(sCol);
+            window.draw(rTxt);
         }
     }
 }
 
-void SimulationGUI::drawQueue() {
+void GUI::drawQueue() {
     const auto& q = sim.getQueue();
-    // خط الطابور بقى "ليزر"
-    sf::RectangleShape laser({800.f, 2.f});
-    laser.setPosition({50.f, 500.f});
-    laser.setFillColor(sf::Color(0, 255, 255, 100));
-    window.draw(laser);
+    int limit = std::min((int)q.getQueueSize(), 8);
+    float t = animClock.getElapsedTime().asSeconds();
 
-    for (int i = 0; i < q.getQueueSize(); ++i) {
+    for (int i = 0; i < limit; ++i) {
         Customer* c = q.getCustomerAt(i);
         if (!c) continue;
-        float x = 750.f - (i * 90.f), y = 475.f;
-        sf::Color cColor = c->getIsVIP() ? vipCustomerColor : normalCustomerColor;
+        
+        float x = 810.f - (i * 95.f);
+        float y = 440.f + std::sin(t * 5.f + i) * 10.f; 
+        
+        sf::Color col = c->getIsVIP() ? vipCustomerColor : normalCustomerColor;
+        sf::CircleShape circle(34.f);
+        circle.setPosition({x, y});
+        circle.setOutlineThickness(4.f); 
+        circle.setOutlineColor(col);
+        circle.setFillColor({10, 10, 15});
+        window.draw(circle);
 
-        // Glow للعميل
-        sf::CircleShape glow(30.f);
-        glow.setPosition({x-5.f, y-5.f});
-        glow.setFillColor(sf::Color(cColor.r, cColor.g, cColor.b, 40));
-        window.draw(glow);
-
-        sf::CircleShape person(25.f);
-        person.setPosition({x, y});
-        person.setFillColor(sf::Color(20, 20, 25));
-        person.setOutlineThickness(3.f);
-        person.setOutlineColor(cColor);
-        window.draw(person);
-
-        sf::Text id(font);
-        id.setString(std::to_string(c->getId()));
-        id.setCharacterSize(16);
-        id.setFillColor(cColor);
-        id.setPosition({x + 16.f, y + 14.f});
+        sf::Text id(font, std::to_string(c->getId()), 18);
+        id.setPosition({x + 16.f, y + 20.f});
+        id.setFillColor(col);
         window.draw(id);
     }
 }
 
-void SimulationGUI::drawGraph() {
-    const auto& history = sim.getQueueHistory();
-    float gX = 50.f, gY = 650.f, gW = 800.f, gH = 200.f;
+void GUI::drawGraph() {
+    // الجراف - رجعناه كبير جداً ومرفوع
+    float gX = 40.f, gY = 580.f, gW = 860.f, gH = 290.f;
     
-    // خلفية الجراف بقت "Grid"
     sf::RectangleShape bg({gW, gH});
     bg.setPosition({gX, gY});
-    bg.setFillColor(sf::Color(255, 255, 255, 5));
+    bg.setFillColor({15, 18, 22, 230});
+    bg.setOutlineThickness(1.f);
+    bg.setOutlineColor({0, 255, 255, 60});
     window.draw(bg);
 
-    if (history.size() < 2) return;
-    sf::VertexArray line(sf::PrimitiveType::LineStrip, history.size());
-    int maxQ = *std::max_element(history.begin(), history.end());
-    if (maxQ == 0) maxQ = 1;
-    for (size_t i = 0; i < history.size(); ++i) {
-        float x = gX + (i * (gW / (history.size() - 1)));
-        float y = gY + gH - ((float)history[i] / maxQ * (gH - 20.f));
-        line[i].position = {x, y};
-        line[i].color = sf::Color(0, 255, 255);
+    if (visualHistory.empty()) return;
+
+    int maxVal = *std::max_element(visualHistory.begin(), visualHistory.end());
+    // سكيل حساس (5) عشان الجراف يرفع فوراً
+    float scale = (maxVal < 5) ? 5.0f : (float)maxVal;
+
+    sf::VertexArray glowArea(sf::PrimitiveType::TriangleStrip, visualHistory.size() * 2);
+    for (size_t i = 0; i < visualHistory.size(); ++i) {
+        float x = gX + (i * (gW / (visualHistory.size() - 1)));
+        float y = gY + gH - ((float)visualHistory[i] / scale * (gH - 50.f));
+        
+        glowArea[i*2].position = {x, gY + gH};
+        glowArea[i*2].color = {0, 255, 255, 10};
+        glowArea[i*2+1].position = {x, y};
+        glowArea[i*2+1].color = {0, 255, 255, 100}; 
     }
-    window.draw(line);
+    window.draw(glowArea);
+
+    sf::VertexArray mainLine(sf::PrimitiveType::LineStrip, visualHistory.size());
+    for (size_t i = 0; i < visualHistory.size(); ++i) {
+        float x = gX + (i * (gW / (visualHistory.size() - 1)));
+        float y = gY + gH - ((float)visualHistory[i] / scale * (gH - 50.f));
+        mainLine[i].position = {x, y};
+        mainLine[i].color = {0, 255, 255};
+    }
+    window.draw(mainLine);
+}
+
+void GUI::run() { window.setFramerateLimit(60); }
+bool GUI::isOpen() const { return window.isOpen(); }
+void GUI::handleEvents() {
+    while (const std::optional<sf::Event> event = window.pollEvent()) {
+        if (event->is<sf::Event::Closed>()) window.close();
+    }
 }
