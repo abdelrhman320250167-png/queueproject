@@ -51,6 +51,10 @@ void Simulation::updateServers() {
     }
 }
 
+int Simulation::getArrivedCount() const {
+    return arrivedCount;
+}
+
 void Simulation::assignCustomersToServers() {
     for (size_t i = 0; i < servers.size(); i++) {
         if (servers[i].isFree() && !q.isEmpty()) {
