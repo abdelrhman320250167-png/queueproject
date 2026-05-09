@@ -14,7 +14,6 @@ Queue::~Queue() {
 
 void Queue::enqueueCustomer(Customer* c) {
     Node* newNode = new Node(c);
-    
     if (isEmpty()) {
         front = rear = newNode;
     } 
@@ -31,23 +30,16 @@ void Queue::enqueueCustomer(Customer* c) {
 
 Customer* Queue::dequeueCustomer() {
     if (isEmpty()) return nullptr;
-
     Node* temp = front;
     Customer* cust = temp->data;
     front = front->next;
-
-    if (front == nullptr) {
-        rear = nullptr;
-    }
-
+    if (front == nullptr) rear = nullptr;
     delete temp;
     size--;
     return cust;
 }
 
-bool Queue::isEmpty() const {
-    return front == nullptr;
-}
+bool Queue::isEmpty() const { return front == nullptr; }
 
 void Queue::updateWaitingTimes(int currentTime) {
     Node* temp = front;
@@ -57,16 +49,11 @@ void Queue::updateWaitingTimes(int currentTime) {
     }
 }
 
-int Queue::getQueueSize() const {
-    return size;
-}
+int Queue::getQueueSize() const { return size; }
 
 Customer* Queue::getCustomerAt(int index) const {
     if (index < 0 || index >= size) return nullptr;
-    
     Node* temp = front;
-    for (int i = 0; i < index; i++) {
-        temp = temp->next;
-    }
+    for (int i = 0; i < index; i++) temp = temp->next;
     return temp->data;
 }
