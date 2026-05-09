@@ -36,8 +36,7 @@ void Controller::updateSystem() {
         
         Customer* c = new Customer(sequentialID, sim.getCurrentTime(), randomServiceTime, isVIP);
         
-        Queue& nonConstQueue = const_cast<Queue&>(sim.getQueue());
-        nonConstQueue.enqueueCustomer(c);
+        sim.addCustomerExternal(c);
     }
     sim.runTick(); 
 }
