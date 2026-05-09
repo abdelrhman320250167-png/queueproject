@@ -25,6 +25,7 @@ public:
     void runTick();
     void addCustomerExternal(Customer* c);
     int getCurrentTime() const;
+    int getArrivedCount() const;
     const std::vector<Server>& getServers() const;
     const Queue& getQueue() const;
     const std::vector<int>& getQueueHistory() const;
