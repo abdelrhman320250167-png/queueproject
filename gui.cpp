@@ -7,13 +7,13 @@ GUI::GUI(Simulation& s)
     : sim(s), 
       window(sf::VideoMode({1200, 900}), "HYPER-FLOW NEON PRO V19.0")
 {
-    if (!font.openFromFile("C:/Windows/Fonts/arial.ttf") && !font.openFromFile("arial.ttf")) {
+    if (!font.openFromFile("arial.ttf")) {
         std::cerr << "Font Error!" << std::endl;
     }
     visualHistory.assign(100, 0);
     bgColor = sf::Color({10, 12, 16});
     normalCustomerColor = sf::Color({0, 255, 255});
-    vipCustomerColor = sf::Color({255, 0, 255});
+    vipCustomerColor = sf::Color({255, 215, 0}); 
     freeServerColor = sf::Color({50, 255, 50});
     busyServerColor = sf::Color({255, 20, 100});
 }
