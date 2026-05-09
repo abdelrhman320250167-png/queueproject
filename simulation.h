@@ -17,11 +17,11 @@ private:
     Queue q;
     std::vector<Server> servers;
 
+    public:
     void processArrival();
     void updateServers();
     void assignCustomersToServers();
 
-public:
     Simulation(int numServers, int maxSimulationTime);
 
     void runTick();

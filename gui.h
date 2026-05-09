@@ -1,21 +1,48 @@
-#ifndef GUI_H
-#define GUI_H
+#ifndef SIMULATION_GUI_H
+#define SIMULATION_GUI_H
 
 #include <SFML/Graphics.hpp>
 #include "Simulation.h"
 
-class GUI {
+class SimulationGUI {
 private:
-    sf::RenderWindow window;
-    sf::Font font;
+    // 1. الأساسيات
+    Simulation& sim;             // reference for simulation to get any new edit
+    sf::RenderWindow window;     
+    sf::Font font;               //FONT TYOE
+
+    // edit size
+    const int windowWidth = 1200; 
+    const int windowHeight = 700;
+    
+    
+    sf::Color bgColor;           
+    sf::Color normalCustomerColor;  
+    sf::Color vipCustomerColor;    
+    sf::Color freeServerColor;     
+    sf::Color busyServerColor;    
+
+
+    
+    float tickRate;
+    sf::Clock clock;
+
+    
+    void handleEvents();// deal with 
+    void update();
+    void render();
+
+    void drawQueue();           
+    void drawDashboard();        
+    void drawGraph();
+    void drawServers();
 
 public:
-    GUI();
     
-    bool isOpen() const;
-    void handleEvents();
-    void render(const Simulation& sim);
-    void close();
+    SimulationGUI(Simulation& s);
+
+    
+    void run();
 };
 
 #endif
