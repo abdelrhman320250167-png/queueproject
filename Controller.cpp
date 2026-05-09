@@ -1,11 +1,7 @@
 #include "Controller.h"
-#include "Customer.h"
-#include "Queue.h"
 #include <SFML/System.hpp>
 #include <ctime>
 #include <cstdlib>
-
-static int customerCounter = 1;
 
 Controller::Controller() : sim(3, 10000), gui(sim) {
     srand(time(0));
@@ -30,9 +26,9 @@ void Controller::startSimulation() {
 
 void Controller::updateSystem() {
     if (rand() % 100 < 35) { 
-        int sequentialID = customerCounter++; 
+        int sequentialID = sim.getArrivedCount() + 1; 
         int randomServiceTime = rand() % 10 + 5; 
-        bool isVIP = false; 
+        bool isVIP = (rand() % 10 == 0); 
         
         Customer* c = new Customer(sequentialID, sim.getCurrentTime(), randomServiceTime, isVIP);
         
