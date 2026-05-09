@@ -3,7 +3,12 @@
 
 #include <SFML/Graphics.hpp>
 #include <vector>
+#include <map>
 #include "Simulation.h"
+
+struct AnimPos {
+    float x, y;
+};
 
 class GUI {
 private:
@@ -12,8 +17,9 @@ private:
     sf::Clock clock;
     sf::Clock animClock;
     std::vector<int> visualHistory;
-    float tickRate;
     Simulation& sim;
+
+    std::map<int, AnimPos> customerPositions;
 
     sf::Color bgColor;
     sf::Color normalCustomerColor;
@@ -25,13 +31,13 @@ private:
     void drawQueue();
     void drawServers();
     void drawGraph();
+    void drawGlowCircle(float x, float y, float radius, sf::Color color, int intensity);
 
 public:
     GUI(Simulation& s);
     void render(Simulation& s);
     void handleEvents();
     bool isOpen() const;
-    void run();
 };
 
 #endif
