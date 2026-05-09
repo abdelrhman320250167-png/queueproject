@@ -29,6 +29,10 @@ void Simulation::runTick() {
     currentTime++;
 }
 
+void Simulation::addCustomerExternal(Customer* c) {
+    q.enqueueCustomer(c);
+}
+
 void Simulation::processArrival() {
     if ((rand() % 100) < 30) {
         arrivedCount++;
