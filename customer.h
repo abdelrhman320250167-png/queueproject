@@ -1,29 +1,50 @@
-#ifndef CUSTOMER_H
-#define CUSTOMER_H
+#pragma once
 
-enum Status { WAITING, SERVING, DONE };
+// Customer.h
+// Defines the Customer class for the queue simulation.
+
+// Customer service states
+enum class Status {
+    WAITING,
+    SERVING,
+    DONE
+};
 
 class Customer {
 private:
-    int id;
-    int arrivalTime;
-    int transactionTime;
-    int waitingTime;
-    bool isVIP;
-    Status status;
+    int id;            // Unique Identifier
+    int arrivalTime;   // Time of arrival
+    int serviceTime;   // Required service duration
+    int waitingTime;   // Time spent in queue
+    bool isVIP;        // VIP status flag
+    Status status;     // Current service state
 
 public:
-    Customer(int id = 0, int arrTime = 0, int transTime = 0, bool vip = false);
-    int getId() const;
-    int getArrivalTime() const;
-    int getTransactionTime() const;
-    int getWaitingTime() const;
-    bool getIsVIP() const;
-    Status getStatus() const;
-    void setWaitingTime(int time);
-    void calculateWaitingTime(int currentTime);
-    void setStatus(Status s);
-    void printInfo() const;
-};
+    // Constructor with default values
+    Customer(int id_ = 0, int arrTime = 0, int serviceTime_ = 0, bool vip = false)
+        : id(id_),
+          arrivalTime(arrTime),
+          serviceTime(serviceTime_),
+          waitingTime(0),
+          isVIP(vip),
+          status(Status::WAITING) {}
 
-#endif
+    // Getters
+    int getId() const { return id; }
+    int getArrivalTime() const { return arrivalTime; }
+    int getServiceTime() const { return serviceTime; }
+    int getWaitingTime() const { return waitingTime; }
+    bool getIsVIP() const { return isVIP; }
+    Status getStatus() const { return status; }
+
+    // Setters
+    void setWaitingTime(int time) { waitingTime = time; }
+    void setStatus(Status s) { status = s; }
+
+    // Updates waiting time based on current time (only if still waiting)
+    void calculateWaitingTime(int currentTime) {
+        if (status == Status::WAITING) {
+            waitingTime = currentTime - arrivalTime;
+        }
+    }
+};
