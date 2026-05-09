@@ -1,5 +1,4 @@
 #include "Simulation.h"
-#include <iostream>
 #include <cstdlib>
 #include <ctime>
 
@@ -14,7 +13,6 @@ Simulation::Simulation(int numServers, int maxSimulationTime) {
     for (int i = 0; i < numServers; i++) {
         servers.push_back(Server());
     }
-    
     srand(time(0)); 
 }
 
@@ -28,7 +26,6 @@ void Simulation::runTick() {
     assignCustomersToServers();
     queueHistory.push_back(q.getQueueSize());
     q.updateWaitingTimes(currentTime);
-
     currentTime++;
 }
 
@@ -37,7 +34,6 @@ void Simulation::processArrival() {
         arrivedCount++;
         int serviceTime = (rand() % 8) + 3; 
         bool isVIP = (rand() % 100) < 15;    
-
         Customer* newCust = new Customer(arrivedCount, currentTime, serviceTime, isVIP);
         q.enqueueCustomer(newCust);
     }
@@ -45,11 +41,8 @@ void Simulation::processArrival() {
 
 void Simulation::updateServers() {
     servedCount = 0; 
-    
     for (size_t i = 0; i < servers.size(); i++) {
-        if (!servers[i].isFree()) {
-            servers[i].updateTime(); 
-        }
+        servers[i].updateTime(); 
         servedCount += servers[i].getTotalServedCount(); 
     }
 }
@@ -63,22 +56,8 @@ void Simulation::assignCustomersToServers() {
     }
 }
 
-int Simulation::getCurrentTime() const {
-    return currentTime;
-}
-
-const vector<Server>& Simulation::getServers() const {
-    return servers;
-}
-
-const Queue& Simulation::getQueue() const {
-    return q;
-}
-
-const vector<int>& Simulation::getQueueHistory() const {
-    return queueHistory;
-}
-
-bool Simulation::getIsRunning() const {
-    return isRunning;
-}
+int Simulation::getCurrentTime() const { return currentTime; }
+const vector<Server>& Simulation::getServers() const { return servers; }
+const Queue& Simulation::getQueue() const { return q; }
+const vector<int>& Simulation::getQueueHistory() const { return queueHistory; }
+bool Simulation::getIsRunning() const { return isRunning; }
