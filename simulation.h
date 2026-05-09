@@ -23,6 +23,7 @@ private:
 public:
     Simulation(int numServers, int maxSimulationTime);
     void runTick();
+    void addCustomerExternal(Customer* c);
     int getCurrentTime() const;
     const std::vector<Server>& getServers() const;
     const Queue& getQueue() const;
