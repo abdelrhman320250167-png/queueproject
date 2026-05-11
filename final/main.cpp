@@ -10,7 +10,6 @@ int main() {
     return 0;
 }
 /*
-cd Queueproject
-cd build
+
 ./QueueSimulation.exe
 */
